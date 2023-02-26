@@ -1,11 +1,36 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet, View, Text, Button, PermissionsAndroid} from 'react-native';
+import {StyleSheet, View, Text, Button, PermissionsAndroid, Platform} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { PERMISSIONS, check, request, RESULTS } from 'react-native-permissions'
 
 const App = () => {
 
   const [location, setLocation] = useState(false);
+
+  const requestLocationPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Geolocation Permission',
+          message: 'Can we access your location?',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      console.log('granted', granted);
+      if (granted === 'granted') {
+        console.log('You can use Geolocation');
+        return true;
+      } else {
+        console.log('You cannot use Geolocation');
+        return false;
+      }
+    } catch (err) {
+      return false;
+    }
+  };
 
   const handleLocationPermission = async () => {
     try {
@@ -34,7 +59,12 @@ const App = () => {
   }, []);
 
   const getLocation = () => {
-    const result = handleLocationPermission();
+    var result = null;
+    if (Platform.OS === 'ios'){
+      result = handleLocationPermission();
+    } else {
+      result = requestLocationPermission();
+    }
     result.then(res => {
       console.log('res is:', res);
       if (res) {
